@@ -1,6 +1,6 @@
 from keras.preprocessing.image import ImageDataGenerator
 from keras.models import load_model
-from keras.callbacks import ModelCheckpoint, EarlyStopping, TensorBoard
+from keras.callbacks import ModelCheckpoint, TensorBoard
 
 from time import time
 import os
@@ -13,9 +13,9 @@ TRAIN_DIR = os.path.join('./dataset/images/train')
 TEST_DIR = os.path.join('./dataset/images/test')
 
 # epoch : 학습 반복 횟수, steps_per_epoch : dataset의 수 / batch_size
-epoch = 100
-steps_per_epoch = 90
-batch_size = 32
+EPOCH = 100
+STEPS_PER_EPOCH = 90
+BATCH_SIZE = 32
 
 # 학습 데이터 Augmentation
 train_datagen = ImageDataGenerator(rescale=1./255, rotation_range=15, width_shift_range=0.1, height_shift_range=0.1,
@@ -23,20 +23,22 @@ train_datagen = ImageDataGenerator(rescale=1./255, rotation_range=15, width_shif
 test_datagen = ImageDataGenerator(rescale=1./255)
 
 # 학습, 테스트 데이터셋의 폴더 별로 자동 라벨링
-train_generator = train_datagen.flow_from_directory(TRAIN_DIR, batch_size=batch_size, target_size=(224, 224),
+train_generator = train_datagen.flow_from_directory(TRAIN_DIR, batch_size=BATCH_SIZE, target_size=(224, 224),
                                                     class_mode='categorical', color_mode='rgb')
-test_generator = test_datagen.flow_from_directory(TEST_DIR, batch_size=batch_size, target_size=(224, 224),
+test_generator = test_datagen.flow_from_directory(TEST_DIR, batch_size=BATCH_SIZE, target_size=(224, 224),
                                                   class_mode='categorical', color_mode='rgb')
 
 # number of classes
 number_of_class = train_generator.num_classes
 
 
-# 모델 파일이 있을 경우 불러옴
 MODEL_SAVE_FOLDER_PATH = './model/'
+model_file_path = MODEL_SAVE_FOLDER_PATH + 'val_loss={val_loss:.4f}, {val_acc:.4f}.hdf5'
+
 if not os.path.exists(MODEL_SAVE_FOLDER_PATH):
     os.mkdir(MODEL_SAVE_FOLDER_PATH)
 
+# 모델 파일이 있을 경우 불러옴
 if os.listdir(MODEL_SAVE_FOLDER_PATH):
     file_list = os.listdir(MODEL_SAVE_FOLDER_PATH)
     file_name = file_list[0]
@@ -45,14 +47,11 @@ if os.listdir(MODEL_SAVE_FOLDER_PATH):
 else:
     model = resnet_layer(number_of_class)
 
-model_file_path = MODEL_SAVE_FOLDER_PATH + 'val_loss_{val_loss}-{val_acc:.4f}.hdf5'
 
-# 학습 과정 설정
-# Optimizer : Adam, Loss function : Categorical cross-entropy
+# 학습 과정 설정 / Optimizer : Adam, Loss function : Categorical cross-entropy
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-# ModelCheckpoint
-# verbose : 해당 함수의 진행 사항의 출력 여부, save_best_only : 모델의 정확도가 최고값을 갱신했을 때만 저장
+# ModelCheckpoint / verbose : 해당 함수의 진행 사항의 출력 여부, save_best_only : 모델의 정확도가 최고값을 갱신했을 때만 저장
 checkpoint = ModelCheckpoint(filepath=model_file_path, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
 
 # earlyStopping = EarlyStopping(monitor='val_loss', min_delta=0.1, patience=10, verbose=0, mode=min)
@@ -60,10 +59,11 @@ checkpoint = ModelCheckpoint(filepath=model_file_path, monitor='val_acc', verbos
 # TensorBoard
 tensorBoard = TensorBoard(log_dir="logs/{}".format(time()))
 
+# Callbacks
 callback_list = [checkpoint, tensorBoard]
 
 # ImageDataGenerator로 얻어진 학습 데이터셋을 통한 학습은 fit() 대신 fit_generator()를 사용
-history = model.fit_generator(train_generator, steps_per_epoch=steps_per_epoch, epochs=epoch, callbacks=callback_list,
+history = model.fit_generator(train_generator, steps_per_epoch=STEPS_PER_EPOCH, epochs=EPOCH, callbacks=callback_list,
                               validation_data=test_generator, validation_steps=number_of_class)
 
 
