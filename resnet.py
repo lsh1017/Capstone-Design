@@ -2,7 +2,7 @@ from keras import models, layers
 from keras import Input
 from keras.models import Model
 from keras import optimizers, initializers, regularizers, metrics
-from keras.layers import BatchNormalization, Conv2D, Activation, Dense, GlobalAveragePooling2D, MaxPool2D, ZeroPadding2D, Add
+from keras.layers import BatchNormalization, Conv2D, Activation, Dense, GlobalAveragePooling2D, MaxPool2D, ZeroPadding2D, Add, Dropout
 
 
 def conv1_layer(x):
@@ -199,6 +199,9 @@ def resnet_layer(number_of_class):
     x = conv5_layer(x)
 
     x = GlobalAveragePooling2D()(x)
+
+    # Dropout
+    x = Dropout(0.3)(x)
 
     output_tensor = Dense(number_of_class, activation='softmax')(x)
 
