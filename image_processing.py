@@ -2,21 +2,21 @@ import cv2
 import os
 
 
-IMAGE_FOLDER_DIR = '.\\dataset_for_image_processing\\original_images\\'
-RESIZE_RATIO = 0.2
+IMAGE_FOLDER_DIR = '.\\dataset\\images\\'
+RESIZE_RATIO = 0.5
 
 
 def image_prossing(dir):
     try:
         for path, dir, files in os.walk(dir):
-            if not os.path.exists(path.replace('original', 'processed')):
-                os.mkdir(path.replace('original', 'processed'))
+            if not os.path.exists(path.replace('image', 'processed_image')):
+                os.mkdir(path.replace('image', 'processed_image'))
 
             for file in files:
                 ext = os.path.splitext(file)[-1]
                 if ext == '.jpg' or ext == '.JPG':
                     image_path = os.path.join(path, file)
-                    processed_image_path = os.path.join(path.replace('original', 'processed'), file)
+                    processed_image_path = os.path.join(path.replace('image', 'processed_image'), file)
                     calculateSize(image_path, processed_image_path)
     except PermissionError:
         pass
