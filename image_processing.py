@@ -3,7 +3,7 @@ import os
 
 
 IMAGE_FOLDER_DIR = '.\\dataset\\images\\'
-RESIZE_RATIO = 0.5
+RESIZE_RATIO = 0.25
 
 
 def image_prossing(dir):
@@ -27,7 +27,7 @@ def calculateSize(file, image_save_path):
     image = cv2.resize(image, dsize=None, fx=RESIZE_RATIO, fy=RESIZE_RATIO)
 
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    ret, image_temp = cv2.threshold(gray, 120, 255, cv2.THRESH_BINARY)
+    ret, image_temp = cv2.threshold(gray, 135, 255, cv2.THRESH_BINARY)
 
 
     width = image_temp.shape[1]
