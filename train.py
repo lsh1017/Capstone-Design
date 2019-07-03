@@ -11,22 +11,24 @@ from InceptionResnetV2 import inceptionResNetV2
 
 
 # 학습, 테스트 데이터셋 경로
-TRAIN_DIR = os.path.join('./dataset/images/train')
-TEST_DIR = os.path.join('./dataset/images/test')
+TRAIN_DIR = os.path.join('./dataset/processed_images/train')
+TEST_DIR = os.path.join('./dataset/processed_images/test')
 
 USING_MODEL = 'Xception'
 MODEL_SAVE_FOLDER_PATH = './model/' + USING_MODEL + '/'
 MODEL_SAVE_NAME = USING_MODEL + '_model.hdf5'
 
 # epoch : 학습 반복 횟수, steps_per_epoch : dataset의 수 / batch_size
-EPOCH = 300
+EPOCH = 100
 STEPS_PER_EPOCH = 175
 BATCH_SIZE = 16
 
 IMAGE_SIZE = (299, 299)
 
 # 학습 데이터 Augmentation
-train_datagen = ImageDataGenerator(rescale=1.0/255, rotation_range=15, width_shift_range=0.1, height_shift_range=0.1,
+# train_datagen = ImageDataGenerator(rescale=1.0/255, rotation_range=15, width_shift_range=0.1, height_shift_range=0.1,
+#                                    zoom_range=0.3, horizontal_flip=True, vertical_flip=True, fill_mode='nearest')
+train_datagen = ImageDataGenerator(rescale=1.0/255, width_shift_range=0.1, height_shift_range=0.1,
                                    zoom_range=0.3, horizontal_flip=True, vertical_flip=True, fill_mode='nearest')
 test_datagen = ImageDataGenerator(rescale=1.0/255)
 
@@ -40,7 +42,7 @@ test_generator = test_datagen.flow_from_directory(TEST_DIR, batch_size=4, target
 number_of_class = train_generator.num_classes
 
 
-model_file_path = MODEL_SAVE_FOLDER_PATH + 'val_loss={val_loss:.4f}_{val_acc:.4f} ' + MODEL_SAVE_NAME
+model_file_path = MODEL_SAVE_FOLDER_PATH + 'val_loss={val_loss:.4f} val_acc={val_acc:.4f} ' + MODEL_SAVE_NAME
 
 if not os.path.exists(MODEL_SAVE_FOLDER_PATH):
     os.mkdir(MODEL_SAVE_FOLDER_PATH)
@@ -67,6 +69,7 @@ checkpoint = ModelCheckpoint(filepath=model_file_path, monitor='val_acc', verbos
 # earlyStopping = EarlyStopping(monitor='val_loss', min_delta=0.1, patience=10, verbose=0, mode=min)
 
 # TensorBoard
+# Anaconda Prompt에 'tensorboard --logdir=logs' 입력
 tensorBoard_name = USING_MODEL + ' ' + str(time())
 tensorBoard = TensorBoard(log_dir='./logs/{}'.format(tensorBoard_name))
 
