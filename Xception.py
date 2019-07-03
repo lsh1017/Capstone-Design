@@ -1,6 +1,6 @@
 from keras.models import Model
 from keras import layers
-from keras.layers import Dense, Input, BatchNormalization, Activation, Dropout
+from keras.layers import Dense, Input, BatchNormalization, Activation, Dropout, regularizers
 from keras.layers import Conv2D, SeparableConv2D, MaxPooling2D, GlobalAveragePooling2D, GlobalMaxPooling2D
 from keras_applications.imagenet_utils import _obtain_input_shape
 from keras.utils.data_utils import get_file
@@ -10,9 +10,9 @@ from keras.utils.data_utils import get_file
 def Xception(number_of_class):
 
 	# Determine proper input shape
-	input_shape = _obtain_input_shape(None, default_size=299, min_size=71, data_format='channels_last', require_flatten=False)
-	
-	img_input = Input(shape=input_shape)
+	# input_shape = _obtain_input_shape(None, default_size=299, min_size=71, data_format='channels_last', require_flatten=False)
+	# img_input = Input(shape=input_shape)
+	img_input = Input(shape=(299, 299, 3), dtype='float32', name='input')
 
 	# Block 1
 	x = Conv2D(32, (3, 3), strides=(2, 2), use_bias=False)(img_input)
@@ -108,6 +108,7 @@ def Xception(number_of_class):
 
 	# Fully Connected Layer
 	x = GlobalAveragePooling2D()(x)
+	x = Dropout(0.5)(x)
 	outputs = Dense(number_of_class, activation='softmax')(x)
 
 	inputs = img_input
