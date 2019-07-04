@@ -108,8 +108,10 @@ def Xception(number_of_class):
 
 	# Fully Connected Layer
 	x = GlobalAveragePooling2D()(x)
+
 	x = Dropout(0.5)(x)
-	outputs = Dense(number_of_class, activation='softmax')(x)
+
+	outputs = Dense(number_of_class, activation='softmax', kernel_regularizer=regularizers.l2(0.01))(x)
 
 	inputs = img_input
 
@@ -123,3 +125,6 @@ def Xception(number_of_class):
 	# model.load_weights(weights_path)
 
 	return model
+
+model = Xception(11)
+model.summary()
