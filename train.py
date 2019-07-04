@@ -6,8 +6,8 @@ from time import time
 import os
 
 from Xception import Xception
-from ResNet import resnet_layer
-from InceptionResnetV2 import inceptionResNetV2
+# from ResNet import resnet_layer
+# from InceptionResnetV2 import inceptionResNetV2
 
 
 # 학습, 테스트 데이터셋 경로
@@ -18,25 +18,19 @@ USING_MODEL = 'Xception'
 MODEL_SAVE_FOLDER_PATH = './model/' + USING_MODEL + '/'
 MODEL_SAVE_NAME = USING_MODEL + '_model.hdf5'
 
-# epoch : 학습 반복 횟수, steps_per_epoch : dataset의 수 / batch_size
 EPOCH = 100
-STEPS_PER_EPOCH = 175
 BATCH_SIZE = 16
-
 IMAGE_SIZE = (299, 299)
 
 # 학습 데이터 Augmentation
-# train_datagen = ImageDataGenerator(rescale=1.0/255, rotation_range=15, width_shift_range=0.1, height_shift_range=0.1,
-#                                    zoom_range=0.3, horizontal_flip=True, vertical_flip=True, fill_mode='nearest')
-train_datagen = ImageDataGenerator(rescale=1.0/255, width_shift_range=0.1, height_shift_range=0.1,
-                                   zoom_range=0.3, horizontal_flip=True, vertical_flip=True, fill_mode='nearest')
-test_datagen = ImageDataGenerator(rescale=1.0/255)
+train_datagen = ImageDataGenerator(rescale=1./255, width_shift_range=0.1, height_shift_range=0.1,
+                                   zoom_range=0.3, horizontal_flip=True, vertical_flip=True, fill_mode='nearest', validation_split=0.3)
 
 # 학습, 테스트 데이터셋의 폴더 별로 자동 라벨링
 train_generator = train_datagen.flow_from_directory(TRAIN_DIR, batch_size=BATCH_SIZE, target_size=IMAGE_SIZE,
-                                                    class_mode='categorical', color_mode='rgb')
-test_generator = test_datagen.flow_from_directory(TEST_DIR, batch_size=4, target_size=IMAGE_SIZE,
-                                                  class_mode='categorical', color_mode='rgb')
+                                                    class_mode='categorical', color_mode='rgb', subset='training')
+validation_generator = train_datagen.flow_from_directory(TRAIN_DIR, batch_size=BATCH_SIZE, target_size=IMAGE_SIZE,
+                                                  class_mode='categorical', color_mode='rgb', subset='validation')
 
 # number of classes
 number_of_class = train_generator.num_classes
@@ -76,8 +70,8 @@ tensorBoard = TensorBoard(log_dir='./logs/{}'.format(tensorBoard_name))
 # Callbacks
 callback_list = [checkpoint, tensorBoard]
 
-model.fit_generator(train_generator, steps_per_epoch=STEPS_PER_EPOCH, epochs=EPOCH, callbacks=callback_list,
-                    validation_data=test_generator, validation_steps=number_of_class)
+model.fit_generator(train_generator, steps_per_epoch=train_generator.samples // BATCH_SIZE, epochs=EPOCH, callbacks=callback_list,
+                    validation_data=validation_generator, validation_steps=validation_generator.samples // BATCH_SIZE)
 
 
 # 모델 저장
