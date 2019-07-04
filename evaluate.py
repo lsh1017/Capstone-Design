@@ -6,9 +6,10 @@ import os
 from PIL import Image
 import cv2
 
-MODEL_FILE_PATH = './model/Xception/val_loss=0.5256 val_acc=0.8864 Xception_model.hdf5'
-TEST_DIR = os.path.join('./dataset/images/test')
-IMAGE_PATH = './evaluate_image/GMB11.JPG'
+MODEL_FILE_PATH = './Xception_model.h5'
+# MODEL_FILE_PATH = './val_loss=1.3712, val_acc=0.6526.hdf5'
+# TEST_DIR = os.path.join('./dataset/images/test')
+IMAGE_PATH = './dataset/processed_images/test/GMB11/_MG_9628.JPG'
 
 model = load_model(MODEL_FILE_PATH)
 
