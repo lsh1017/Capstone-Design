@@ -6,25 +6,30 @@ from time import time
 import os
 
 from Xception import Xception
+from MobileNet import MobileNetv2
 # from ResNet import resnet_layer
 # from InceptionResnetV2 import inceptionResNetV2
 
+Theme = 'Animals'
 
 # 학습, 테스트 데이터셋 경로
-TRAIN_DIR = os.path.join('./dataset/processed_images/train')
-TEST_DIR = os.path.join('./dataset/processed_images/test')
+TRAIN_DIR = os.path.join('./dataset/' + Theme + '/train')
+TEST_DIR = os.path.join('./dataset/' + Theme + '/test')
 
-USING_MODEL = 'Xception'
-MODEL_SAVE_FOLDER_PATH = './model/' + USING_MODEL + '/'
-MODEL_SAVE_NAME = USING_MODEL + '_model.hdf5'
+MODEL_SAVE_FOLDER_PATH = './model/' + Theme + '/'
+MODEL_SAVE_NAME = Theme + '_Xception.hdf5'
+TENSORBOARD_NAME = Theme + ' ' + MODEL_SAVE_NAME
 
-EPOCH = 100
+EPOCH = 10
 BATCH_SIZE = 16
 IMAGE_SIZE = (299, 299)
 
 # 학습 데이터 Augmentation
-train_datagen = ImageDataGenerator(rescale=1./255, width_shift_range=0.1, height_shift_range=0.1,
-                                   zoom_range=0.3, horizontal_flip=True, vertical_flip=True, fill_mode='nearest', validation_split=0.3)
+'''
+train_datagen = ImageDataGenerator(rescale=1./255, width_shift_range=0.1, height_shift_range=0.1, rotation_range=90,
+                                   zoom_range=0.3, horizontal_flip=True, vertical_flip=True, fill_mode='nearest', validation_split=0.2)
+'''
+train_datagen = ImageDataGenerator(rescale=1./255, validation_split=0.2)
 
 # 학습, 테스트 데이터셋의 폴더 별로 자동 라벨링
 train_generator = train_datagen.flow_from_directory(TRAIN_DIR, batch_size=BATCH_SIZE, target_size=IMAGE_SIZE,
@@ -42,17 +47,19 @@ if not os.path.exists(MODEL_SAVE_FOLDER_PATH):
     os.mkdir(MODEL_SAVE_FOLDER_PATH)
 
 # 모델 파일이 있을 경우 불러옴
-if os.listdir(MODEL_SAVE_FOLDER_PATH):
-    file_list = os.listdir(MODEL_SAVE_FOLDER_PATH)
-    file_name = file_list[0]
-    print('load model : ' + file_name)
-    model = load_model(MODEL_SAVE_FOLDER_PATH + file_name)
-
-else:
-    model = Xception(number_of_class)
+# if os.listdir(MODEL_SAVE_FOLDER_PATH):
+#     file_list = os.listdir(MODEL_SAVE_FOLDER_PATH)
+#     file_name = file_list[0]
+#     print('load model : ' + file_name)
+#     model = load_model(MODEL_SAVE_FOLDER_PATH + file_name)
+#
+# else:
+    # model = MobileNetv2(number_of_class)
+model = Xception(number_of_class)
     # model = resnet_layer(number_of_class)
     # model = inceptionResNetV2(number_of_class)
 
+model.summary()
 
 # 학습 과정 설정 / Optimizer : Adam, Loss function : Categorical cross-entropy
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
@@ -64,8 +71,7 @@ checkpoint = ModelCheckpoint(filepath=model_file_path, monitor='val_acc', verbos
 
 # TensorBoard
 # Anaconda Prompt에 'tensorboard --logdir=logs' 입력
-tensorBoard_name = USING_MODEL + ' ' + str(time())
-tensorBoard = TensorBoard(log_dir='./logs/{}'.format(tensorBoard_name))
+tensorBoard = TensorBoard(log_dir='./logs/{}'.format(TENSORBOARD_NAME + str(time())))
 
 # Callbacks
 callback_list = [checkpoint, tensorBoard]
@@ -75,5 +81,5 @@ model.fit_generator(train_generator, steps_per_epoch=train_generator.samples // 
 
 
 # 모델 저장
-model.save(MODEL_SAVE_NAME)
+model.save(MODEL_SAVE_FOLDER_PATH + MODEL_SAVE_NAME)
 print("Saving....")
